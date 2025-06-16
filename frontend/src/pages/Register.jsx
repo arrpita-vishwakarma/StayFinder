@@ -4,9 +4,12 @@ import { ArrowLeft, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -17,6 +20,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -28,25 +32,119 @@ const Register = () => {
       ...prev,
       [e.target.name]: e.target.value,
     }));
+    // Clear error when user starts typing
+    if (error) setError("");
+  };
+
+  const validateForm = () => {
+    if (!formData.firstName.trim()) {
+      setError("First name is required");
+      return false;
+    }
+    if (!formData.lastName.trim()) {
+      setError("Last name is required");
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (!formData.email.includes("@")) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    if (!formData.password) {
+      setError("Password is required");
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+    return true;
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setError("");
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+    if (!validateForm()) {
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate registration process
-    setTimeout(() => {
+    try {
+      // Combine firstName and lastName into a single name field
+      const userData = {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        password: formData.password,
+        role: "user", // Default role
+      };
+
+      // First, try to register directly with axios to see the exact error
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        userData
+      );
+
+      console.log("Registration response:", response.data);
+
+      // If successful, use the auth context to handle the login
+      const result = await register(userData);
+
+      if (result.success) {
+        navigate("/");
+      } else {
+        setError(result.error);
+      }
+    } catch (error) {
+      console.error(
+        "Registration error:",
+        error.response?.data || error.message
+      );
+
+      // Handle specific error cases
+      if (error.response?.status === 400) {
+        if (error.response?.data?.message === "User already exists") {
+          setError(
+            <div>
+              <p>An account with this email already exists.</p>
+              <p className="mt-2">
+                Would you like to{" "}
+                <Link
+                  to="/login"
+                  className="text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  log in
+                </Link>{" "}
+                instead?
+              </p>
+            </div>
+          );
+        } else if (error.response?.data?.errors) {
+          // Handle validation errors from the server
+          const validationErrors = error.response.data.errors
+            .map((err) => err.msg)
+            .join(", ");
+          setError(validationErrors);
+        } else {
+          setError(
+            error.response?.data?.message ||
+              "Please check your information and try again"
+          );
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again later.");
+      }
+    } finally {
       setIsLoading(false);
-      alert("Registration functionality would be implemented here");
-      // In a real app, you'd handle user registration here
-      navigate("/");
-    }, 1000);
+    }
   };
 
   return (
@@ -73,6 +171,12 @@ const Register = () => {
           </CardHeader>
 
           <CardContent className="pt-6">
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                {typeof error === "string" ? error : error}
+              </div>
+            )}
+
             <form onSubmit={handleRegister} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>

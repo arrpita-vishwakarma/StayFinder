@@ -1,12 +1,23 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Calendar, Users, Star, Heart } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Calendar,
+  Users,
+  Star,
+  Heart,
+  User,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [searchLocation, setSearchLocation] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -20,6 +31,11 @@ const Index = () => {
       guests: guests,
     });
     navigate(`/search?${searchParams.toString()}`);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   // Mock property data
@@ -174,19 +190,42 @@ const Index = () => {
               >
                 Become a Host
               </Button>
-              <Button
-                variant="outline"
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                onClick={() => navigate("/login")}
-              >
-                Log In
-              </Button>
-              <Button
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                onClick={() => navigate("/register")}
-              >
-                Sign Up
-              </Button>
+              {user ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    className="text-gray-700 hover:text-emerald-600"
+                    onClick={() => navigate("/profile")}
+                  >
+                    <User className="w-5 h-5 mr-2" />
+                    {user.firstName}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="w-5 h-5 mr-2" />
+                    Log Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                    onClick={() => navigate("/login")}
+                  >
+                    Log In
+                  </Button>
+                  <Button
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    onClick={() => navigate("/register")}
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -4,13 +4,16 @@ import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -20,14 +23,16 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      alert("Login functionality would be implemented here");
-      // In a real app, you'd handle authentication here
+    const result = await login(email, password);
+    setIsLoading(false);
+
+    if (result.success) {
       navigate("/");
-    }, 1000);
+    } else {
+      setError(result.error);
+    }
   };
 
   return (
@@ -54,6 +59,12 @@ const Login = () => {
           </CardHeader>
 
           <CardContent className="pt-6">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label
