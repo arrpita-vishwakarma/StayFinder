@@ -4,11 +4,64 @@ const { check, validationResult } = require("express-validator");
 const Listing = require("../models/Listing");
 const auth = require("../middleware/auth");
 
-// Get all listings
+// Get all listings with search and filter functionality
 router.get("/", async (req, res) => {
   try {
-    const listings = await Listing.find().populate("host", "name email");
-    res.json(listings);
+    const {
+      location,
+      checkin,
+      checkout,
+      guests,
+      minPrice,
+      maxPrice,
+      propertyType,
+    } = req.query;
+
+    // Build search query
+    let query = { isAvailable: true };
+
+    if (location) {
+      query.location = { $regex: location, $options: "i" };
+    }
+
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = parseInt(minPrice);
+      if (maxPrice) query.price.$lte = parseInt(maxPrice);
+    }
+
+    if (propertyType) {
+      query.propertyType = propertyType;
+    }
+
+    if (guests) {
+      query.maxGuests = { $gte: parseInt(guests) };
+    }
+
+    const listings = await Listing.find(query)
+      .populate("host", "name email")
+      .sort({ createdAt: -1 });
+
+    // Format response to match frontend expectations
+    const formattedListings = listings.map((listing) => ({
+      id: listing._id,
+      title: listing.title,
+      location: listing.location,
+      price: listing.price,
+      rating: listing.rating,
+      reviews: listing.reviews,
+      image: listing.images[0] || "",
+      host: listing.hostName,
+      type: listing.propertyType,
+      guests: listing.maxGuests,
+      bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms,
+      description: listing.description,
+      amenities: listing.amenities,
+      images: listing.images,
+    }));
+
+    res.json(formattedListings);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -25,7 +78,27 @@ router.get("/:id", async (req, res) => {
     if (!listing) {
       return res.status(404).json({ message: "Listing not found" });
     }
-    res.json(listing);
+
+    // Format response to match frontend expectations
+    const formattedListing = {
+      id: listing._id,
+      title: listing.title,
+      location: listing.location,
+      price: listing.price,
+      rating: listing.rating,
+      reviews: listing.reviews,
+      image: listing.images[0] || "",
+      host: listing.hostName,
+      type: listing.propertyType,
+      guests: listing.maxGuests,
+      bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms,
+      description: listing.description,
+      amenities: listing.amenities,
+      images: listing.images,
+    };
+
+    res.json(formattedListing);
   } catch (err) {
     console.error(err.message);
     if (err.kind === "ObjectId") {
@@ -48,6 +121,8 @@ router.post(
       check("maxGuests", "Maximum guests is required").isNumeric(),
       check("bedrooms", "Number of bedrooms is required").isNumeric(),
       check("bathrooms", "Number of bathrooms is required").isNumeric(),
+      check("propertyType", "Property type is required").not().isEmpty(),
+      check("hostName", "Host name is required").not().isEmpty(),
     ],
   ],
   async (req, res) => {

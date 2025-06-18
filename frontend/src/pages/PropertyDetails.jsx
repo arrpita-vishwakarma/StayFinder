@@ -1,74 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, MapPin, Users, Calendar, Heart, Share2, Wifi, Car, Coffee, Tv, Wind, Waves } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Star,
+  MapPin,
+  Users,
+  Calendar,
+  Heart,
+  Share2,
+  Wifi,
+  Car,
+  Coffee,
+  Tv,
+  Wind,
+  Waves,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 
 const PropertyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState('2');
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [guests, setGuests] = useState("2");
+  const [property, setProperty] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Mock property data - in a real app, you'd fetch this based on the ID
-  const property = {
-    id: 1,
-    title: "Modern Lakeside Cabin",
-    location: "Lake Tahoe, CA",
-    price: 189,
-    rating: 4.9,
-    reviews: 127,
-    images: [
-      "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&h=600&fit=crop"
-    ],
-    host: {
-      name: "Sarah Chen",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-      verified: true,
-      responseRate: 98,
-      responseTime: "within an hour"
-    },
-    type: "Entire cabin",
-    guests: 6,
-    bedrooms: 3,
-    bathrooms: 2,
-    description: "Escape to this stunning lakeside cabin with breathtaking views of Lake Tahoe. Perfect for families or groups looking for a peaceful retreat with modern amenities and outdoor activities right at your doorstep.",
-    amenities: [
-      { icon: Wifi, name: "Free WiFi" },
-      { icon: Car, name: "Free parking" },
-      { icon: Coffee, name: "Kitchen" },
-      { icon: Tv, name: "TV with cable" },
-      { icon: Wind, name: "Air conditioning" },
-      { icon: Waves, name: "Lake access" }
-    ],
-    rules: [
-      "Check-in: 3:00 PM - 11:00 PM",
-      "Checkout: 11:00 AM",
-      "No smoking",
-      "No pets allowed",
-      "No parties or events"
-    ]
-  };
+  // Fetch property data from backend
+  useEffect(() => {
+    const fetchProperty = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `http://localhost:5000/api/listings/${id}`
+        );
+        if (!response.ok) {
+          throw new Error("Property not found");
+        }
+        const data = await response.json();
+        setProperty(data);
+      } catch (err) {
+        console.error("Error fetching property:", err);
+        setError("Failed to load property details. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const [selectedImage, setSelectedImage] = useState(0);
+    if (id) {
+      fetchProperty();
+    }
+  }, [id]);
 
   const handleBooking = () => {
     if (!checkIn || !checkOut) {
-      alert('Please select check-in and check-out dates');
+      alert("Please select check-in and check-out dates");
       return;
     }
-    alert('Booking functionality would be implemented here');
+    alert("Booking functionality would be implemented here");
   };
+
+  // Amenity icons mapping
+  const amenityIcons = {
+    WiFi: Wifi,
+    "Free parking": Car,
+    Kitchen: Coffee,
+    "TV with cable": Tv,
+    "Air conditioning": Wind,
+    "Lake access": Waves,
+    "Mountain view": Wind,
+    "Ski storage": Car,
+    Fireplace: Wind,
+    Deck: Waves,
+    "City view": Wind,
+    "Gym access": Car,
+    "Rooftop deck": Waves,
+    Concierge: Coffee,
+    "Beach access": Waves,
+    Pool: Waves,
+    "Hot tub": Waves,
+    "Ocean view": Waves,
+    "Private beach": Waves,
+    "Desert view": Wind,
+    "Hiking trails": Car,
+    "Spa access": Coffee,
+    "Outdoor shower": Waves,
+    "Forest view": Wind,
+    "Fire pit": Wind,
+    "No WiFi": Wifi,
+    "Wildlife watching": Car,
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          <p className="mt-4 text-gray-600">Loading property details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !property) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || "Property not found"}</p>
+          <Button
+            onClick={() => navigate("/")}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -76,9 +133,9 @@ const PropertyDetails = () => {
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/')}
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/")}
               className="flex items-center"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
@@ -101,7 +158,9 @@ const PropertyDetails = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Property Title */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {property.title}
+          </h1>
           <div className="flex items-center space-x-4 text-gray-600">
             <div className="flex items-center">
               <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
@@ -115,20 +174,20 @@ const PropertyDetails = () => {
           </div>
         </div>
 
-        {/* Image Gallery - Fixed sizes */}
+        {/* Image Gallery */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
           <div className="lg:col-span-1">
-            <img 
-              src={property.images[selectedImage]} 
+            <img
+              src={property.images[selectedImage]}
               alt={property.title}
               className="w-full h-80 object-cover rounded-lg"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             {property.images.slice(1, 5).map((image, index) => (
-              <img 
+              <img
                 key={index}
-                src={image} 
+                src={image}
                 alt={`Property view ${index + 2}`}
                 className="w-full h-38 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setSelectedImage(index + 1)}
@@ -144,43 +203,62 @@ const PropertyDetails = () => {
             <div className="border-b pb-6 mb-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{property.type}</h2>
-                  <p className="text-gray-600">{property.guests} guests · {property.bedrooms} bedrooms · {property.bathrooms} bathrooms</p>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {property.type}
+                  </h2>
+                  <p className="text-gray-600">
+                    {property.guests} guests · {property.bedrooms} bedrooms ·{" "}
+                    {property.bathrooms} bathrooms
+                  </p>
                 </div>
-                <img 
-                  src={property.host.avatar} 
-                  alt={property.host.name}
-                  className="w-12 h-12 rounded-full"
-                />
+                <div className="text-right">
+                  <p className="font-medium text-gray-900">
+                    Host: {property.host}
+                  </p>
+                  <p className="text-sm text-gray-600">Superhost</p>
+                </div>
               </div>
             </div>
 
             {/* Description */}
             <div className="border-b pb-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">About this place</h3>
-              <p className="text-gray-700 leading-relaxed">{property.description}</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                About this place
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                {property.description}
+              </p>
             </div>
 
             {/* Amenities */}
             <div className="border-b pb-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">What this place offers</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                What this place offers
+              </h3>
               <div className="grid grid-cols-2 gap-4">
-                {property.amenities.map((amenity, index) => (
-                  <div key={index} className="flex items-center">
-                    <amenity.icon className="w-5 h-5 text-gray-600 mr-3" />
-                    <span className="text-gray-700">{amenity.name}</span>
-                  </div>
-                ))}
+                {property.amenities.map((amenity, index) => {
+                  const IconComponent = amenityIcons[amenity] || Coffee;
+                  return (
+                    <div key={index} className="flex items-center">
+                      <IconComponent className="w-5 h-5 text-gray-600 mr-3" />
+                      <span className="text-gray-700">{amenity}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* House Rules */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">House rules</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                House rules
+              </h3>
               <ul className="space-y-2">
-                {property.rules.map((rule, index) => (
-                  <li key={index} className="text-gray-700">{rule}</li>
-                ))}
+                <li className="text-gray-700">Check-in: 3:00 PM - 11:00 PM</li>
+                <li className="text-gray-700">Checkout: 11:00 AM</li>
+                <li className="text-gray-700">No smoking</li>
+                <li className="text-gray-700">No pets allowed</li>
+                <li className="text-gray-700">No parties or events</li>
               </ul>
             </div>
           </div>
@@ -191,20 +269,28 @@ const PropertyDetails = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <span className="text-2xl font-bold text-gray-900">${property.price}</span>
+                    <span className="text-2xl font-bold text-gray-900">
+                      ${property.price}
+                    </span>
                     <span className="text-gray-600 ml-1">/ night</span>
                   </div>
                   <div className="flex items-center">
                     <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
-                    <span className="text-sm font-medium">{property.rating}</span>
-                    <span className="text-sm text-gray-500 ml-1">({property.reviews})</span>
+                    <span className="text-sm font-medium">
+                      {property.rating}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-1">
+                      ({property.reviews})
+                    </span>
                   </div>
                 </div>
 
                 <div className="space-y-4 mb-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Check-in
+                      </label>
                       <Input
                         type="date"
                         value={checkIn}
@@ -213,7 +299,9 @@ const PropertyDetails = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Check-out
+                      </label>
                       <Input
                         type="date"
                         value={checkOut}
@@ -222,9 +310,11 @@ const PropertyDetails = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Guests
+                    </label>
                     <div className="relative">
                       <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <Input
@@ -240,7 +330,7 @@ const PropertyDetails = () => {
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   onClick={handleBooking}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 text-lg font-semibold"
                 >
@@ -253,7 +343,9 @@ const PropertyDetails = () => {
 
                 <div className="border-t pt-4 mt-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">${property.price} x 2 nights</span>
+                    <span className="text-gray-600">
+                      ${property.price} x 2 nights
+                    </span>
                     <span className="text-gray-900">${property.price * 2}</span>
                   </div>
                   <div className="flex justify-between text-sm">

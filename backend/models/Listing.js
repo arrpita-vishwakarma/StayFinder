@@ -32,6 +32,10 @@ const listingSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  hostName: {
+    type: String,
+    required: true,
+  },
   maxGuests: {
     type: Number,
     required: true,
@@ -43,6 +47,29 @@ const listingSchema = new mongoose.Schema({
   bathrooms: {
     type: Number,
     required: true,
+  },
+  propertyType: {
+    type: String,
+    required: true,
+    enum: [
+      "Entire cabin",
+      "Entire home",
+      "Entire loft",
+      "Entire villa",
+      "Entire lodge",
+      "Private room",
+      "Shared room",
+    ],
+  },
+  rating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+  },
+  reviews: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,

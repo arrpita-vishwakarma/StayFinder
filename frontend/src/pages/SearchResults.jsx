@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Search,
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import Navbar from "@/components/ui/navbar";
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -32,94 +33,70 @@ const SearchResults = () => {
     privateRoom: false,
     sharedRoom: false,
   });
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock search results data
-  const properties = [
-    {
-      id: 1,
-      title: "Modern Lakeside Cabin",
-      location: "Lake Tahoe, CA",
-      price: 189,
-      rating: 4.9,
-      reviews: 127,
-      image:
-        "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=300&fit=crop",
-      host: "Sarah Chen",
-      type: "Entire cabin",
-      guests: 6,
-      bedrooms: 3,
-    },
-    {
-      id: 2,
-      title: "Cozy Mountain Retreat",
-      location: "Aspen, CO",
-      price: 245,
-      rating: 4.8,
-      reviews: 89,
-      image:
-        "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=400&h=300&fit=crop",
-      host: "Michael Rodriguez",
-      type: "Entire home",
-      guests: 8,
-      bedrooms: 4,
-    },
-    {
-      id: 3,
-      title: "Urban Loft Downtown",
-      location: "Portland, OR",
-      price: 156,
-      rating: 4.7,
-      reviews: 203,
-      image:
-        "https://images.unsplash.com/photo-1500673922987-e212871fec22?w=400&h=300&fit=crop",
-      host: "Emma Thompson",
-      type: "Entire loft",
-      guests: 4,
-      bedrooms: 2,
-    },
-    {
-      id: 4,
-      title: "Beachfront Villa",
-      location: "Malibu, CA",
-      price: 389,
-      rating: 5.0,
-      reviews: 156,
-      image:
-        "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=400&h=300&fit=crop",
-      host: "David Park",
-      type: "Entire villa",
-      guests: 10,
-      bedrooms: 5,
-    },
-    {
-      id: 5,
-      title: "Desert Oasis Lodge",
-      location: "Sedona, AZ",
-      price: 298,
-      rating: 4.9,
-      reviews: 91,
-      image:
-        "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=400&h=300&fit=crop",
-      host: "Rachel Adams",
-      type: "Entire lodge",
-      guests: 6,
-      bedrooms: 3,
-    },
-    {
-      id: 6,
-      title: "Forest Hideaway",
-      location: "Olympic National Park, WA",
-      price: 167,
-      rating: 4.8,
-      reviews: 74,
-      image:
-        "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=300&fit=crop",
-      host: "James Wilson",
-      type: "Entire cabin",
-      guests: 4,
-      bedrooms: 2,
-    },
-  ];
+  // Fetch properties from backend with search parameters
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+
+        // Build query parameters
+        const queryParams = new URLSearchParams();
+        if (searchLocation) queryParams.append("location", searchLocation);
+        if (guests) queryParams.append("guests", guests);
+        if (priceRange[0] > 0) queryParams.append("minPrice", priceRange[0]);
+        if (priceRange[1] < 1000) queryParams.append("maxPrice", priceRange[1]);
+
+        // Add property type filter if any are selected
+        const selectedTypes = [];
+        if (propertyTypes.entirePlace)
+          selectedTypes.push(
+            "Entire home",
+            "Entire cabin",
+            "Entire loft",
+            "Entire villa",
+            "Entire lodge"
+          );
+        if (propertyTypes.privateRoom) selectedTypes.push("Private room");
+        if (propertyTypes.sharedRoom) selectedTypes.push("Shared room");
+
+        if (selectedTypes.length > 0) {
+          selectedTypes.forEach((type) =>
+            queryParams.append("propertyType", type)
+          );
+        }
+
+        const response = await fetch(
+          `http://localhost:5000/api/listings?${queryParams.toString()}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch properties");
+        }
+        const data = await response.json();
+        setProperties(data);
+      } catch (err) {
+        console.error("Error fetching properties:", err);
+        setError("Failed to load properties. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, [searchLocation, guests, priceRange, propertyTypes]);
+
+  const handleSearch = () => {
+    const searchParams = new URLSearchParams({
+      location: searchLocation,
+      checkin: checkIn,
+      checkout: checkOut,
+      guests: guests,
+    });
+    navigate(`/search?${searchParams.toString()}`);
+  };
 
   const PropertyCard = ({ property }) => (
     <Card
@@ -183,39 +160,7 @@ const SearchResults = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1
-              className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent cursor-pointer"
-              onClick={() => navigate("/")}
-            >
-              StayFinder
-            </h1>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                className="text-gray-700 hover:text-emerald-600"
-              >
-                Become a Host
-              </Button>
-              <Button
-                variant="outline"
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                onClick={() => navigate("/login")}
-              >
-                Log In
-              </Button>
-              <Button
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                onClick={() => navigate("/register")}
-              >
-                Sign Up
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Search Bar */}
       <div className="bg-white border-b">
@@ -294,7 +239,10 @@ const SearchResults = () => {
                 <Filter className="w-4 h-4 mr-2" />
                 Filters
               </Button>
-              <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8">
+              <Button
+                onClick={handleSearch}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8"
+              >
                 <Search className="w-5 h-5 mr-2" />
                 Search
               </Button>
@@ -392,10 +340,6 @@ const SearchResults = () => {
                       />
                     </div>
                   </div>
-
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                    Apply Filters
-                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -409,7 +353,9 @@ const SearchResults = () => {
                   Search Results
                 </h2>
                 <p className="text-gray-600">
-                  {properties.length} properties found
+                  {loading
+                    ? "Loading..."
+                    : `${properties.length} properties found`}
                 </p>
               </div>
               <Button variant="outline" className="flex items-center">
@@ -418,21 +364,52 @@ const SearchResults = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {properties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+                <p className="mt-4 text-gray-600">Loading properties...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-red-600 mb-4">{error}</p>
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : properties.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600 mb-4">
+                  No properties found matching your criteria.
+                </p>
+                <Button
+                  onClick={() => setShowFilters(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Adjust Filters
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {properties.map((property) => (
+                  <PropertyCard key={property.id} property={property} />
+                ))}
+              </div>
+            )}
 
             {/* Load More */}
-            <div className="text-center mt-12">
-              <Button
-                variant="outline"
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-8 py-3"
-              >
-                Load More Properties
-              </Button>
-            </div>
+            {properties.length > 0 && (
+              <div className="text-center mt-12">
+                <Button
+                  variant="outline"
+                  className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-8 py-3"
+                >
+                  Load More Properties
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
