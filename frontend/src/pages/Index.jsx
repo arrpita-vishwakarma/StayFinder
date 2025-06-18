@@ -32,7 +32,7 @@ const Index = () => {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/api/listings");
+        const response = await fetch("https://stayfinder-backend-kmg8.onrender.com/listings");
         if (!response.ok) {
           throw new Error("Failed to fetch properties");
         }

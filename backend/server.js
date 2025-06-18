@@ -14,7 +14,7 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173", // Vite dev
-    "https://your-frontend-domain.com" // your deployed frontend
+    "https://stayfinder-frontend-r08i.onrender.com" // your deployed frontend
   ],
   credentials: true, // if you use cookies/auth
 }));

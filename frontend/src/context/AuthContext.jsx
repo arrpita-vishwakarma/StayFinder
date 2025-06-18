@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        "https://stayfinder-backend-kmg8.onrender.com/auth/login",
         {
           email,
           password,
@@ -56,7 +56,8 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
+        // "http://localhost:5000/api/auth/register",
+        "https://stayfinder-backend-kmg8.onrender.com/auth/register",
         userData
       );
       const { token } = response.data;

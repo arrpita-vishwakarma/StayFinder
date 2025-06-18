@@ -89,7 +89,7 @@ const Register = () => {
 
       // First, try to register directly with axios to see the exact error
       const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
+        "https://stayfinder-backend-kmg8.onrender.com/auth/register",
         userData
       );
 
