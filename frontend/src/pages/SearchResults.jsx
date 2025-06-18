@@ -70,7 +70,7 @@ const SearchResults = () => {
         }
 
         const response = await fetch(
-          `https://stayfinder-backend-kmg8.onrender.com/listings?${queryParams.toString()}`
+          `https://stayfinder-backend-kmg8.onrender.com/api/listings?${queryParams.toString()}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch properties");

@@ -41,7 +41,7 @@ const PropertyDetails = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://stayfinder-backend-kmg8.onrender.com/listings/${id}`
+          `https://stayfinder-backend-kmg8.onrender.com/api/listings/${id}`
         );
         if (!response.ok) {
           throw new Error("Property not found");
