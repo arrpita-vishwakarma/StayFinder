@@ -10,7 +10,14 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173", // Vite dev
+    "https://your-frontend-domain.com" // your deployed frontend
+  ],
+  credentials: true, // if you use cookies/auth
+}));
 app.use(express.json());
 
 // MongoDB Connection
