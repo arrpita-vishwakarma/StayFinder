@@ -1,12 +1,56 @@
-# React + Vite
+# StayFinder Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+StayFinder is a modern property rental platform. The frontend is built with React and Vite, providing a fast, responsive, and user-friendly experience for users and hosts.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- User authentication (register/login)
+- Browse property listings with search and filters
+- View detailed property information
+- Book properties as a guest
+- Host dashboard to manage listings and bookings
+- Responsive design for mobile and desktop
+- Toast notifications and modern UI components
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- [React](https://react.dev/) (with hooks and context)
+- [Vite](https://vitejs.dev/) for fast development and builds
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [React Router](https://reactrouter.com/) for client-side routing
+
+## Getting Started
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Run the development server:**
+
+   ```bash
+   npm run dev
+   ```
+
+   The app will be available at `http://localhost:5173` by default.
+
+3. **Build for production:**
+   ```bash
+   npm run build
+   ```
+
+## Project Structure
+
+- `src/pages/` — Main pages (Home, Login, Register, Property Details, etc.)
+- `src/components/` — Reusable UI components
+- `src/context/` — React context for authentication
+- `src/hooks/` — Custom React hooks
+- `src/lib/` — Utility functions
+
+## Deployment
+
+- SPA routing is supported via `static.json` and Render rewrite rules.
+- To deploy, build the app and serve the `dist/` directory on your static host.
+
+---
+
+For backend/API setup, see the [backend README](../backend/README.md).
