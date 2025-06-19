@@ -2,6 +2,10 @@
 
 StayFinder is a full-stack property rental platform that allows users to browse, book, and host properties. Built with a modern tech stack (React, Vite, Node.js, Express, MongoDB), it provides a seamless experience for both guests and hosts.
 
+## Live Demo
+
+- [https://stayfinder-frontend-r08i.onrender.com](https://stayfinder-frontend-r08i.onrender.com)
+
 ## Features
 
 - User authentication (register/login)
