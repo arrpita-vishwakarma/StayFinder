@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -87,15 +86,7 @@ const Register = () => {
         role: "user", // Default role
       };
 
-      // First, try to register directly with axios to see the exact error
-      const response = await axios.post(
-        "https://stayfinder-backend-kmg8.onrender.com/api/auth/register",
-        userData
-      );
-
-      console.log("Registration response:", response.data);
-
-      // If successful, use the auth context to handle the login
+      // Only use the register function from AuthContext
       const result = await register(userData);
 
       if (result.success) {
@@ -108,40 +99,7 @@ const Register = () => {
         "Registration error:",
         error.response?.data || error.message
       );
-
-      // Handle specific error cases
-      if (error.response?.status === 400) {
-        if (error.response?.data?.message === "User already exists") {
-          setError(
-            <div>
-              <p>An account with this email already exists.</p>
-              <p className="mt-2">
-                Would you like to{" "}
-                <Link
-                  to="/login"
-                  className="text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  log in
-                </Link>{" "}
-                instead?
-              </p>
-            </div>
-          );
-        } else if (error.response?.data?.errors) {
-          // Handle validation errors from the server
-          const validationErrors = error.response.data.errors
-            .map((err) => err.msg)
-            .join(", ");
-          setError(validationErrors);
-        } else {
-          setError(
-            error.response?.data?.message ||
-              "Please check your information and try again"
-          );
-        }
-      } else {
-        setError("An unexpected error occurred. Please try again later.");
-      }
+      setError("An unexpected error occurred. Please try again later.");
     } finally {
       setIsLoading(false);
     }
