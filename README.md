@@ -26,7 +26,7 @@ StayFinder is a full-stack property rental platform that allows users to browse,
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/PrakharSinghG/StayFinder.git
+git clone https://github.com/arrpita-vishwakarma/StayFinder.git
 cd StayFinder
 ```
 
